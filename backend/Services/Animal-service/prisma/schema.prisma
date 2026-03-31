@@ -1,0 +1,283 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  STAFF
+  VETERINARIAN
+}
+
+
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum AnimalStatus {
+  ACTIVE
+  SOLD
+  DEAD
+  DONATED
+}
+
+enum AcquisitionType {
+  BIRTH
+  PURCHASE
+  DONATION
+}
+
+enum BullType {
+  GAUSHALA
+  AI
+}
+
+enum CowBreed {
+  Gir
+  Sahiwal
+  Red_Sindhi
+  Tharparkar
+  Kankrej
+  Rathi
+  Punganur
+  Badri
+  Hallikar
+  Kangayam
+  Hariana
+  Mewati
+  Nagori
+  Nimadi
+  Malvi
+  Kherigarh
+  Amritmahal
+  Umblachery
+  Pulikulam
+  Bargur
+  Ongole
+  Red_Kandhari
+  Gaolao
+  Gangatiri
+  Siri
+  Motu
+  Vechur
+  Jersey
+  Holstein_Friesian
+  Brown_Swiss
+}
+
+model CowGroup {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  gaushalaId      String   @db.ObjectId
+  name            String
+  createdAt       DateTime @default(now())
+  animals         Animal[]
+
+  @@unique([gaushalaId, name])
+  @@map("cow_groups")
+}
+
+model Animal {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Basic Info
+  name            String
+  tagNumber       String
+  animalNumber    String?
+  gender          Gender
+  gaushalaId      String   @db.ObjectId // Link to Gaushala entity in Auth-service
+
+  // Breed
+  cowBreed        CowBreed?
+
+  // Group
+  cowGroupId      String?   @db.ObjectId
+  cowGroup        CowGroup? @relation(fields: [cowGroupId], references: [id])
+
+  // Dates
+  birthDate       DateTime?
+  adultDate       DateTime?
+
+  // Female Lifecycle
+  isPregnant      Boolean   @default(false)
+  parity          Int?      @default(0)
+  isLactating     Boolean   @default(false)
+  isDryOff        Boolean   @default(false)
+  isHeifer        Boolean   @default(false)
+  isRetired       Boolean   @default(false)
+  retiredDate     DateTime?
+
+  // Bull Specific / Pedigree
+  bullType        BullType?
+  bullView        String?
+  motherMilk      Float?
+  grandmotherMilk Float?
+  motherName      String?
+  fatherName      String?
+  motherId        String?   @db.ObjectId
+  fatherId        String?   @db.ObjectId
+
+  // Health & Physical Traits
+  isHandicapped   Boolean   @default(false)
+  handicapReason  String?
+  
+  // Udder Status (Closed = non-functional)
+  isUdderClosedFL Boolean   @default(false)
+  isUdderClosedFR Boolean   @default(false)
+  isUdderClosedBL Boolean   @default(false)
+  isUdderClosedBR Boolean   @default(false)
+
+  // Acquisition
+  acquisitionType AcquisitionType
+  purchaseDate    DateTime?
+  purchasedFrom   String?
+  purchasePrice   Float?
+  ownerName       String?
+  ownerMobile     String?
+
+  // Disposal Status
+  status          AnimalStatus @default(ACTIVE)
+
+  // Photo
+  photoUrl        String?
+
+  // Relations
+  sellRecord      SellRecord?
+  deathRecord     DeathRecord?
+  donationRecord  DonationRecord?
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // @@unique([tagNumber, gaushalaId]) // Removed to allow re-use of tags from inactive/deleted animals
+  @@index([gaushalaId, gender, isActive, status])
+  @@index([gaushalaId, birthDate])
+  @@map("animals")
+}
+
+model SellRecord {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String   @unique @db.ObjectId
+  animal        Animal   @relation(fields: [animalId], references: [id])
+
+  buyer     String
+  mobileNumber  String
+  city          String?
+  amount        Float
+  referenceBy   String?
+  photoUrl      String?
+
+  isActive      Boolean  @default(true)
+  soldAt        DateTime @default(now())
+
+  @@map("sell_records")
+}
+
+model DeathRecord {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String   @unique @db.ObjectId
+  animal        Animal   @relation(fields: [animalId], references: [id])
+
+  dateOfDeath   DateTime
+  reason        String
+  lastPhotoUrl  String?
+
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@map("death_records")
+}
+
+model DonationRecord {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String   @unique @db.ObjectId
+  animal        Animal   @relation(fields: [animalId], references: [id])
+
+  gaushalaName  String
+  mobileNumber  String
+  referenceBy   String?
+  photoUrl      String?
+
+  isActive      Boolean  @default(true)
+  donatedAt     DateTime @default(now())
+
+  @@map("donation_records")
+}
+
+// ───────────────────────── Shadow Models for Cascading Hard Deletion ─────────────────────────
+
+model MedicalRecord {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String   @db.ObjectId
+  @@map("medical_records")
+}
+
+model VaccinationRecord {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  animalId    String   @db.ObjectId
+  @@map("vaccination_records")
+}
+
+model DewormingRecord {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String    @db.ObjectId
+  @@map("deworming_records")
+}
+
+model LabRecord {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String    @db.ObjectId
+  @@map("lab_records")
+}
+
+model MilkRecord {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String   @db.ObjectId
+  @@map("milk_records")
+}
+
+model ParityRecord {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String         @db.ObjectId
+  @@map("parity_records")
+}
+
+model HeatRecord {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String         @db.ObjectId
+  @@map("heat_records")
+}
+
+model DryOffRecord {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String       @db.ObjectId
+  @@map("dry_off_records")
+}
+
+model ConceptionJourney {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String         @db.ObjectId
+  @@map("conception_journeys")
+}
+
+model UserGaushala {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  gaushalaId      String   @db.ObjectId
+  role            Role     @default(OWNER)
+  isActive        Boolean  @default(true)
+  joinedAt        DateTime @default(now())
+
+  @@unique([userId, gaushalaId])
+  @@map("user_gaushalas")
+}

@@ -1,0 +1,13 @@
+{
+    "watch": [
+        "src"
+    ],
+    "ext": "ts,json",
+    "ignore": [
+        "dist"
+    ],
+    "exec": "tsx --tsconfig tsconfig.json src/index.ts",
+    "env": {
+        "NODE_ENV": "development"
+    }
+}

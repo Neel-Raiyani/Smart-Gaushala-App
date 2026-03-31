@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  STAFF
+  VETERINARIAN
+}
+
+model Folder {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  gaushalaId      String   @db.ObjectId
+  name            String
+  type            MediaType
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items           GalleryItem[]
+
+  @@unique([gaushalaId, name, type])
+  @@map("folders")
+}
+
+model GalleryItem {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  folderId        String   @db.ObjectId
+  folder          Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  gaushalaId      String   @db.ObjectId
+  
+  fileName        String   // S3 Key
+  originalName    String
+  mimeType        String
+  size            Int
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("gallery_items")
+}
+
+// ───────────────────────── External References (Partial Models) ─────────────────────────
+
+model UserGaushala {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  gaushalaId      String   @db.ObjectId
+  role            Role     @default(OWNER)
+  isActive        Boolean  @default(true)
+  joinedAt        DateTime @default(now())
+
+  @@unique([userId, gaushalaId])
+  @@map("user_gaushalas")
+}
+
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("users")
+}

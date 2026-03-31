@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  STAFF
+  VETERINARIAN
+}
+
+enum Language {
+  ENGLISH
+  GUJARATI
+  HINDI
+}
+
+model User {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  mobileNumber    String   @unique
+  password        String?
+  name            String
+  city            String?
+  isActive        Boolean   @default(true)
+  
+  // Settings
+  language        Language  @default(ENGLISH)
+  fcmToken        String?   // Store the Firebase registration token
+  
+  // Password Recovery / OTP
+  otp             String?
+  otpExpires      DateTime?
+
+  // Relations
+  memberships     UserGaushala[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Gaushala {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  city            String?
+  state           String?
+  totalCattle     Int?      @default(0)
+  
+  // Relations
+  members         UserGaushala[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("gaushalas")
+}
+
+model UserGaushala {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id])
+  
+  gaushalaId      String   @db.ObjectId
+  gaushala        Gaushala @relation(fields: [gaushalaId], references: [id])
+  
+  role            Role     @default(OWNER)
+  isActive        Boolean  @default(true)
+  joinedAt        DateTime @default(now())
+
+  @@unique([userId, gaushalaId])
+  @@map("user_gaushalas")
+}

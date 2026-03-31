@@ -1,0 +1,308 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  STAFF
+  VETERINARIAN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum AnimalStatus {
+  ACTIVE
+  SOLD
+  DEAD
+  DONATED
+}
+
+enum AcquisitionType {
+  BIRTH
+  PURCHASE
+  DONATION
+}
+
+enum JourneyStatus {
+  INITIATED
+  PREGNANT
+  DRY_OFF
+  COMPLETED
+  FAILED
+}
+
+enum PregnancyType {
+  NATURAL
+  AI
+}
+
+enum CalfStatus {
+  ALIVE
+  DEAD
+  ABORTED
+}
+
+enum DryOffReason {
+  ILLNESS
+  LOW_YIELD
+  MEDICATED
+  OTHER
+}
+
+enum CowBreed {
+  Gir
+  Sahiwal
+  Red_Sindhi
+  Tharparkar
+  Kankrej
+  Rathi
+  Punganur
+  Badri
+  Hallikar
+  Kangayam
+  Hariana
+  Mewati
+  Nagori
+  Nimadi
+  Malvi
+  Kherigarh
+  Amritmahal
+  Umblachery
+  Pulikulam
+  Bargur
+  Ongole
+  Red_Kandhari
+  Gaolao
+  Gangatiri
+  Siri
+  Motu
+  Vechur
+  Jersey
+  Holstein_Friesian
+  Brown_Swiss
+}
+
+enum BullType {
+  GAUSHALA
+  AI
+}
+
+// ───────────────────────── Animal (Shadow) ─────────────────────────
+
+model Animal {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  tagNumber       String?
+  animalNumber    String?
+  gender          Gender
+  gaushalaId      String       @db.ObjectId
+  cowBreed        CowBreed?
+  cowGroupId      String?   @db.ObjectId
+  birthDate       DateTime?
+  adultDate       DateTime?
+  isPregnant      Boolean      @default(false)
+  parity          Int?         @default(0)
+  isLactating     Boolean      @default(false)
+  isDryOff        Boolean      @default(false)
+  isHeifer        Boolean      @default(false)
+  isRetired       Boolean      @default(false)
+  retiredDate     DateTime?
+  photoUrl        String?
+  status          AnimalStatus @default(ACTIVE)
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // @@unique([tagNumber, gaushalaId])
+  @@map("animals")
+}
+
+// ───────────────────────── Breeding (Shadow) ─────────────────────────
+
+model ConceptionJourney {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String         @db.ObjectId
+  gaushalaId      String         @db.ObjectId
+  status          JourneyStatus  @default(INITIATED)
+  parity          Int
+  conceiveDate    DateTime
+  pregnancyType   PregnancyType
+  bullId          String?        @db.ObjectId
+  bullName        String?
+  bullTag         String?
+  serialNumber    String?
+  companyName     String?
+  pdDate          DateTime?
+  pdResult        Boolean?
+  dryOffDate      DateTime?
+  deliveryDate    DateTime?
+  calfStatus      CalfStatus?
+  calfGender      Gender?
+  calfAppearance  String?
+  calfWeight      Float?
+  deliveryPhoto   String?
+  calfPhoto       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("conception_journeys")
+}
+
+model HeatRecord {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String         @db.ObjectId
+  gaushalaId      String         @db.ObjectId
+  date            DateTime
+  parity          Int
+  breedingType    PregnancyType
+  note            String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("heat_records")
+}
+
+model DryOffRecord {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String       @db.ObjectId
+  gaushalaId      String       @db.ObjectId
+  date            DateTime
+  reason          DryOffReason
+  remarks         String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("dry_off_records")
+}
+
+model ParityRecord {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String         @db.ObjectId
+  gaushalaId      String         @db.ObjectId
+  parityNo        Int
+  cowPhoto        String?
+  pregnancyType   PregnancyType
+  bullId          String?        @db.ObjectId
+  bullName        String?
+  deliveryDate    DateTime
+  pregnancyDate   DateTime
+  dryOffDate      DateTime?
+  note            String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("parity_records")
+}
+
+// ───────────────────────── Health (Shadow) ─────────────────────────
+
+model VaccinationRecord {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  animalId    String   @db.ObjectId
+  gaushalaId  String   @db.ObjectId
+  doseDate    DateTime
+  doseType    String
+  vaccineId   String   @db.ObjectId
+  remark      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("vaccination_records")
+}
+
+model DewormingRecord {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String    @db.ObjectId
+  gaushalaId    String    @db.ObjectId
+  doseDate      DateTime
+  doseType      String
+  companyName   String?
+  quantity      String?
+  vetId         String?   @db.ObjectId
+  nextDoseDate  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("deworming_records")
+}
+
+model LabRecord {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String    @db.ObjectId
+  gaushalaId    String    @db.ObjectId
+  labtestId     String    @db.ObjectId
+  sampleDate    DateTime
+  resultDate    DateTime?
+  result        String?
+  attachmentUrl String?
+  remark        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("lab_records")
+}
+
+model VaccineMaster {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String   @unique
+  frequencyMonths Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@map("vaccine_masters")
+}
+
+model LabtestMaster {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  gaushalaId  String   @db.ObjectId
+  createdAt   DateTime @default(now())
+
+  @@unique([name, gaushalaId])
+  @@map("labtest_masters")
+}
+
+// ───────────────────────── Auth (Shadow) ─────────────────────────
+
+model User {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  fcmToken        String?
+  memberships     UserGaushala[]
+
+  @@map("users")
+}
+
+model Gaushala {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  members         UserGaushala[]
+
+  @@map("gaushalas")
+}
+
+model UserGaushala {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id])
+  
+  gaushalaId      String   @db.ObjectId
+  gaushala        Gaushala @relation(fields: [gaushalaId], references: [id])
+  
+  role            Role     @default(OWNER)
+  isActive        Boolean  @default(true)
+  joinedAt        DateTime @default(now())
+
+  @@unique([userId, gaushalaId])
+  @@map("user_gaushalas")
+}

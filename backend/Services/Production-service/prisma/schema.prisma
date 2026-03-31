@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  STAFF
+  VETERINARIAN
+}
+
+model UserGaushala {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  gaushalaId      String   @db.ObjectId
+  role            Role     @default(OWNER)
+  isActive        Boolean  @default(true)
+  joinedAt        DateTime @default(now())
+
+  @@unique([userId, gaushalaId])
+  @@map("user_gaushalas")
+}
+
+enum Session {
+  MORNING
+  EVENING
+}
+
+model Animal {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  tagNumber       String?
+  isActive        Boolean  @default(true)
+  gaushalaId      String   @db.ObjectId
+  milkRecords     MilkRecord[]
+  // @@unique([tagNumber, gaushalaId])
+  @@map("animals")
+}
+
+model MilkDistributionCategory {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  gaushalaId      String   @db.ObjectId
+  name            String
+  createdAt       DateTime @default(now())
+
+  @@unique([gaushalaId, name])
+  @@map("milk_distribution_categories")
+}
+
+model FeedInventory {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  gaushalaId      String   @unique @db.ObjectId
+  totalQuantity   Float    // Total Feed in Kg
+  updatedAt       DateTime @updatedAt
+
+  @@map("feed_inventory")
+}
+
+model MilkRecord {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String   @db.ObjectId
+  animal          Animal   @relation(fields: [animalId], references: [id])
+  gaushalaId      String   @db.ObjectId
+  date            DateTime
+  session         Session
+  quantity        Float    // Milk in Liters
+  feedQuantity    Float    // Feed consumed in Kg
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([animalId, date, session])
+  @@map("milk_records")
+}
+
+model MilkDistribution {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  gaushalaId      String   @db.ObjectId
+  date            DateTime
+  session         Session
+  categoryId      String   @db.ObjectId
+  quantity        Float    // Milk in Liters
+  createdAt       DateTime @default(now())
+
+  @@map("milk_distribution_records")
+}

@@ -1,0 +1,11 @@
+{
+  "name": "cattle-backend",
+  "private": true,
+  "scripts": {
+    "build": "npm install --prefix Services/Auth-service && npm run prisma:generate --prefix Services/Auth-service && npm run build --prefix Services/Auth-service && npm install --prefix Services/Animal-service && npm run prisma:generate --prefix Services/Animal-service && npm run build --prefix Services/Animal-service && npm install --prefix Services/Breeding-service && npm run prisma:generate --prefix Services/Breeding-service && npm run build --prefix Services/Breeding-service && npm install --prefix Services/Health-service && npm run prisma:generate --prefix Services/Health-service && npm run build --prefix Services/Health-service && npm install --prefix Services/Production-service && npm run prisma:generate --prefix Services/Production-service && npm run build --prefix Services/Production-service && npm install --prefix Services/Media-service && npm run prisma:generate --prefix Services/Media-service && npm run build --prefix Services/Media-service && npm install --prefix Services/Alert-service && npm run prisma:generate --prefix Services/Alert-service && npm run build --prefix Services/Alert-service && npm install --prefix Services/Gateway-service && npm run build --prefix Services/Gateway-service",
+    "start": "concurrently -c \"blue,green,magenta,cyan,white,yellow,gray,blue\" -n \"Auth,Animal,Breeding,Health,Production,Media,Alert,Gateway\" \"npm start --prefix Services/Auth-service\" \"npm start --prefix Services/Animal-service\" \"npm start --prefix Services/Breeding-service\" \"npm start --prefix Services/Health-service\" \"npm start --prefix Services/Production-service\" \"npm start --prefix Services/Media-service\" \"npm start --prefix Services/Alert-service\" \"npm start --prefix Services/Gateway-service\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

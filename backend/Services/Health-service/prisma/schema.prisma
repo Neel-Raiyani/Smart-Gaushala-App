@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  STAFF
+  VETERINARIAN
+}
+
+enum Species {
+  COW
+  BUFFALO
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum AnimalStatus {
+  ACTIVE
+  SOLD
+  DEAD
+  DONATED
+}
+
+enum AcquisitionType {
+  BIRTH
+  PURCHASE
+  DONATION
+}
+
+enum HealthVisitType {
+  ILLNESS
+  CHECKUP
+}
+
+enum MedicalStatus {
+  SICK
+  HEALTHY
+}
+
+enum VaccineDoseType {
+  FIRST
+  BOOSTER
+  REPEAT
+}
+
+enum DewormingDoseType {
+  INJECTION
+  TABLET
+}
+
+enum LabResult {
+  POSITIVE
+  NEGATIVE
+}
+
+// ───────────────────────── Master Lists ─────────────────────────
+model DiseaseMaster {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  gaushalaId  String?  @db.ObjectId   // null = common disease (visible to all gaushalas)
+  createdAt   DateTime @default(now())
+
+  @@unique([name, gaushalaId])
+  @@map("disease_masters")
+}
+
+model VaccineMaster {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  gaushalaId      String?  @db.ObjectId   // null = common vaccine (visible to all gaushalas)
+  frequencyMonths Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@unique([name, gaushalaId])
+  @@map("vaccine_masters")
+}
+
+model LabtestMaster {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  gaushalaId  String?  @db.ObjectId   // null = common lab test (visible to all gaushalas)
+  createdAt   DateTime @default(now())
+
+  @@unique([name, gaushalaId])
+  @@map("labtest_masters")
+}
+
+// ───────────────────────── Health Records ─────────────────────────
+
+model MedicalRecord {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  animalId        String          @db.ObjectId
+  gaushalaId      String          @db.ObjectId
+  visitType       HealthVisitType // "ILLNESS" | "CHECKUP"
+  visitDate       DateTime
+  visitNumber     String?
+  vetId           String?         @db.ObjectId   // Reference to User.id (Veterinarian)
+  diseaseId       String?         @db.ObjectId   // Reference to DiseaseMaster.id
+  medicalStatus   MedicalStatus   // "SICK" | "HEALTHY"
+  symptoms        String?
+  treatment       String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([gaushalaId, animalId, visitDate])
+  @@map("medical_records")
+}
+
+model VaccinationRecord {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  animalId    String          @db.ObjectId
+  gaushalaId  String          @db.ObjectId
+  doseDate    DateTime
+  doseType    VaccineDoseType // "FIRST" | "BOOSTER" | "REPEAT"
+  vaccineId   String          @db.ObjectId   // Reference to VaccineMaster.id
+  remark      String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([gaushalaId, animalId, vaccineId])
+  @@map("vaccination_records")
+}
+
+model DewormingRecord {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String            @db.ObjectId
+  gaushalaId    String            @db.ObjectId
+  doseDate      DateTime
+  doseType      DewormingDoseType // "INJECTION" | "TABLET"
+  companyName   String?
+  quantity      String?
+  vetId         String?           @db.ObjectId   // Reference to User.id
+  nextDoseDate  DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([gaushalaId, nextDoseDate])
+  @@index([gaushalaId, animalId, doseDate])
+  @@map("deworming_records")
+}
+
+model LabRecord {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  animalId      String    @db.ObjectId
+  gaushalaId    String    @db.ObjectId
+  labtestId     String    @db.ObjectId   // Reference to LabtestMaster.id
+  sampleDate    DateTime
+  resultDate    DateTime?
+  result        LabResult?               // "POSITIVE" | "NEGATIVE"
+  attachmentUrl String?
+  remark        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("lab_records")
+}
+
+// ───────────────────────── External References (Partial Models) ─────────────────────────
+
+model UserGaushala {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  gaushalaId      String   @db.ObjectId
+  role            Role     @default(OWNER)
+  isActive        Boolean  @default(true)
+  joinedAt        DateTime @default(now())
+
+  @@unique([userId, gaushalaId])
+  @@map("user_gaushalas")
+}
+
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Animal {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  tagNumber       String?
+  animalNumber    String?
+  photoUrl        String?
+  gender          Gender   @default(FEMALE)
+  isHeifer        Boolean  @default(false)
+  status          AnimalStatus @default(ACTIVE)
+  isActive        Boolean  @default(true)
+  gaushalaId      String   @db.ObjectId
+  
+  // @@unique([tagNumber, gaushalaId])
+  @@map("animals")
+}

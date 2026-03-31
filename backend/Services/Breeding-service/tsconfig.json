@@ -1,0 +1,53 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "nodenext",
+        "lib": [
+            "ES2022"
+        ],
+        "baseUrl": "./src",
+        "paths": {
+            "@controllers/*": [
+                "controllers/*"
+            ],
+            "@routes/*": [
+                "routes/*"
+            ],
+            "@middlewares/*": [
+                "middlewares/*"
+            ],
+            "@utils/*": [
+                "utils/*"
+            ],
+            "@config/*": [
+                "config/*"
+            ],
+            "@appTypes/*": [
+                "types/*"
+            ],
+            "@validators/*": [
+                "validators/*"
+            ]
+        },
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "nodenext",
+        "allowSyntheticDefaultImports": true,
+        "sourceMap": true,
+        "resolveJsonModule": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "logs",
+        "prisma.config.ts",
+        "prisma/**/*"
+    ]
+}
