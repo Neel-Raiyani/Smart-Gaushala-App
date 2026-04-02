@@ -1,1 +1,33 @@
+# Get Stuff Done (GSD) Workflow
+# We track the 'brain' of the project (.planning/) 
+# and the skills/tools (.agent/) to maintain context across sessions.
+.planning/
 .agent/
+
+# Miscellaneous
+*.log
+*.txt
+*.json
+*.pdf
+! PROJECT.md
+! ROADMAP.md
+! REQUIREMENTS.md
+! STATE.md
+
+# Logs from initialization
+init_output.*
+config_output.*
+
+# IDE - IntelliJ/Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# IDE - VS Code
+.vscode/
+.history/
+
+# OS related
+.DS_Store
+Thumbs.db

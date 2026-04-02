@@ -2,70 +2,81 @@
 
 ## What This Is
 
-Smart-Gaushala-App is a comprehensive Cattle Management System designed to streamline operations for gaushalas (cow shelters). It provides a full suite of tools to manage cattle lifecycles, health records, breeding cycles, and milk production analytics via a scalable microservices backend (Node.js/Express) and a cross-platform frontend interface (Flutter).
+Smart-Gaushala-App is a comprehensive Cattle Management System designed to streamline operations for gaushalas (cow shelters). It provides a full suite of tools to manage cattle lifecycles, health records, breeding cycles, and milk production analytics via a scalable backend and a cross-platform frontend interface (Flutter).
 
 ## Core Value
 
-Ensuring robust, accurate, and scalable data management for cattle operations to improve herd health, production efficiency, and overall shelter management.
+A fully integrated, real-time cattle management application — connecting the premium Flutter frontend to the production backend (8 microservices) with zero-latency data sync, reactive state management, and professional UX.
 
 ## Requirements
 
 ### Validated
 
-- ✓ Core cattle management (registration, groups, lifecycle) — existing
-- ✓ Health records, vaccinations, and deworming tracking — existing
-- ✓ Breeding records (heat cycles, conception journeys, parity) — existing
-- ✓ Milk production records and analytics — existing
-- ✓ File uploads and media management (S3/MinIO integration) — existing
-- ✓ User management, gaushala registration, and JWT authentication — existing
-- ✓ System alerts and notifications — existing
-- ✓ Centralized API Gateway routing — existing
+- ✓ Core cattle management backend (registration, groups, lifecycle) — existing
+- ✓ Health records, vaccinations, and deworming tracking backend — existing
+- ✓ Breeding records (heat cycles, conception journeys, parity) backend — existing
+- ✓ Milk production records and analytics backend — existing
+- ✓ Alert service (8 alert types with date-based logic) — existing
+- ✓ Media service (S3/MinIO presigned URLs, photo/video gallery) — existing
+- ✓ Premium UI Foundation (Jade & Gold design system) — Milestone 1 complete
+- ✓ Auth, Dashboard, Health, Breeding, Production UI screens — Milestone 1 complete
 
-### Active
+### Active (Milestone 2: Backend Integration)
 
-- [ ] Unify reporting and add comprehensive export functionalities
-- [ ] Further harden data integrity around parity-age validation
-- [ ] Stabilize API response structures with universal pagination
+- [ ] Core API infrastructure (HTTP client, auth storage, interceptors)
+- [ ] Dart data models matching all Prisma schemas
+- [ ] Riverpod state management with reactive updates
+- [ ] Real auth flow (login/register/OTP) connected to backend
+- [ ] Animal CRUD screens (Cow list, Bull list, Detail, Register form)
+- [ ] Health screens connected to real API (medical, vaccination, deworming, lab, timeline)
+- [ ] Breeding screens connected to real API (heat, journey lifecycle, parity)
+- [ ] Production screens connected to real API (yields, reports, analytics)
+- [ ] Alert screen with all 8 categories from Alert-service
+- [ ] Media gallery connected to presigned URL flow
+- [ ] Dashboard showing real-time data from all services
+- [ ] Professional loaders, error handling, and instant UI updates
 
 ### Out of Scope
 
-- [ ] Direct sales or e-commerce integration — Not currently the focus of the management system.
+- [ ] Backend API changes — Zero backend modifications for this milestone
+- [ ] Push notifications (FCM) — can be a future milestone
+- [ ] Offline-first/caching — focus on online operation first
 
 ## Context
 
-- **Technical Environment**: Microservices architecture using Express.js, TypeScript, Prisma (MongoDB), handled by an API Gateway. The frontend is built on Flutter. Media files are stored in MinIO/S3.
-- **Prior Work**: Substantial existing codebase covering Auth, Animal, Health, Breeding, Production, Media, and Alert services.
-- **Known Issues/Focus**: Recent work involved adding system pagination and robust parity validation for AI bulls vs. resident bulls. Stable deployments need scalable media handling and reporting improvements.
+- **Technical Environment**: Flutter frontend, Node.js/Express/Prisma/MongoDB backend, 8 microservices behind API Gateway
+- **Backend URL**: `https://week3reqbackend.empyreal.work/`
+- **State Management**: Riverpod (chosen for reactive updates and code generation support)
+- **HTTP Client**: Dio (chosen for interceptors, error handling, multipart support)
+- **Prior Work**: Milestone 1 completed — premium Jade & Gold UI with mock data across all screens
+- **Key Constraint**: UI must auto-update when data changes (no manual refresh)
 
 ## Constraints
 
-- **Tech Stack**: Must adhere to existing Node.js/TypeScript backend services and Flutter frontend.
-- **Database**: Must use Prisma with MongoDB. Direct MongoDB queries are restricted.
-- **Storage**: Must continue utilizing S3/MinIO for media rather than local storage.
+- **Tech Stack**: Flutter + Riverpod + Dio
+- **Scope limitation**: Frontend integration only. Backend is frozen.
+- **Performance**: Zero perceived latency — skeleton loaders, optimistic updates where possible
+- **Error UX**: Every API error must display a professional, user-friendly message
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Microservices Architecture | Enables independent scaling and targeted development for specific domains (Health vs. Production). | ✓ Good |
-| API Gateway | Simplifies client communication by providing a single entry point to all services. | ✓ Good |
+| Frontend Rebuild (M1) | Existing frontend UI did not match premium vision | ✓ Complete |
+| Riverpod over Bloc | Better reactive primitives, code generation, simpler boilerplate for this app's data flow | In Progress |
+| Dio over http | Interceptors for JWT injection, error handling, multipart for S3 uploads | In Progress |
+| Gaushala Selector | Backend supports multi-gaushala. Build simple selector after login since most users have 1-2 gaushalas | Planned |
 
 ---
-*Last updated: 2026-03-31 after initialization*
+*Last updated: 2026-04-02 — New milestone: Backend Integration*
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd-transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
+**Milestone 1 (UI Rebuild)**: ✅ COMPLETED 2026-04-01
+- Phases 1-3: Design System → Auth/Dashboard UI → Domain Feature UI
+- All screens built with mock data, premium Jade & Gold aesthetic
 
-**After each milestone** (via `/gsd-complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+**Milestone 2 (Backend Integration)**: 🔵 ACTIVE
+- Phases 4-10: Infrastructure → Auth → Animal → Health → Breeding → Production → Dashboard+Alerts+Media
